@@ -9,7 +9,6 @@ exports.getLocations = function () {
         },
         {
             location: function (req) {
-                console.log(req.pathname);
                 var pathname = req.pathname;
                 var paths = [
                     '/bdbox/hot'

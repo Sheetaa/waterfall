@@ -190,19 +190,24 @@ define(function (require) {
         $wfCol = $wfContainer.find('.waterfall-col');
         $wfLoading = $wfContainer.find('.waterfall-loading');
         wfOffset = $wfContainer.offset().top;
-        wfWidth = $wfContainer.width();
+        // 在没有设置waterfall-container宽度的时候
+        // 滚动条会占据宽度的一部分，导致宽度计算不准确
+        // 所以减去滚动条的宽度15px
+        wfWidth = $wfContainer.width() - 15;
+        console.log(wfWidth);
+        console.log($wfContainer[0].clientWidth);
         wfHeight = 0;
-        colWidth = (wfWidth - (defaultOptions.colNum - 1) * defaultOptions.gutterWidth) / defaultOptions.colNum;
+        colWidth = (wfWidth - (defaultOptions.colNum + 1) * defaultOptions.gutterWidth) / defaultOptions.colNum;
         $wfCol.css({
             width: colWidth,
             paddingLeft: defaultOptions.gutterWidth / 2,
             paddingRight: defaultOptions.gutterWidth / 2
         });
         $wfCol.first().css({
-            paddingLeft: 0
+            paddingLeft: defaultOptions.gutterWidth
         });
         $wfCol.last().css({
-            paddingRight: 0
+            paddingRight: defaultOptions.gutterWidth
         });
 
         // 初始化计算相关参数

@@ -18,12 +18,12 @@
         </div>
         <div class="waterfall-col">
         </div>
-        <div class="waterfall-loading"><i></i>&nbsp;正在加载，请稍候</div>
+        <div class="waterfall-loading clearfix"><i></i>&nbsp;正在加载，请稍候</div>
     </div>
     <div class="footer"></div>
     <script src="http://requirejs.org/docs/release/2.1.11/minified/require.js"></script>
     <script>
-    require(['Waterfall'], function (waterfall) {
+    require(['waterfall'], function (waterfall) {
         waterfall.init({
             colNum: 4,
             ajaxConf: {

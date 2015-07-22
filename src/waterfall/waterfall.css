@@ -12,7 +12,6 @@ body {
 }
 .waterfall-container {
     overflow-x: hidden;
-    width: 980px;
 }
 .waterfall-col {
     float: left;
