@@ -116,6 +116,8 @@ define(function (require) {
             img.src = cardList[i].imgSrc;
             img.alt = cardList[i].tag[0];
             img.className = 'waterfall-img';
+            img.style.width = '100%';
+            img.style.height = 'auto';
             imgs.push(img);
         }
         utils.imagesLoaded(imgs, function (imgs) {
