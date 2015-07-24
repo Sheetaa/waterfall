@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <div href="http://cp01-rdqa-dev351.cp01.baidu.com:8080/bdboxn/2/bingo/k/ES-ad676f28-4c16-4b78-b83c-48d1398a8956/f/all" target="_blank" class="waterfall-card" style="margin-bottom: 6px;"><p class="waterfall-card-tag"><em class="waterfall-card-tag-item">小天坛</em></p><img src="http://bs.baidu.com/resource/dajiasou/60.jpg" alt="小天坛" class="waterfall-img" style="width: 100%; height: auto;"></div>
+    <script>
+    var a = document.querySelector('.waterfall-card');
+
+    var duration = 1000;
+    var startTime;
+    function animatejs() {
+        startTime = new Date();
+        a.style.webkitTransform = 'rotate3d(0, 1, 0, 90deg)';
+        requestAnimationFrame(timeHandler);
+    }
+
+    function timeHandler() {
+        var timePast = new Date() - startTime;
+        if (timePast >= duration) {
+            tick(1);
+        }
+        else {
+            tick(timePast / duration);
+            requestAnimationFrame(timeHandler);
+        }
+    }
+
+    function tick(percent) {
+        var angle = 90 * (1 - percent);
+        a.style.webkitTransform = 'rotate3d(0, 1, 0, ' + angle + 'deg)';
+        console.log(angle);
+    }
+
+    setTimeout(animatejs, 1000);
+    </script>
+</body>
+</html>

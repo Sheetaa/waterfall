@@ -42,6 +42,10 @@ define(function (require) {
     var isAllLoaded;
     var page;
     var colHeight = [];
+    var map = {
+        up: {},
+        down: {}
+    };
 
     /**
      * 加载更多
@@ -69,10 +73,12 @@ define(function (require) {
                     }
                     else if (data.errno === 1001) {
                         isAllLoaded = true;
-                        isLoading = false;
-                        $wfLoading.hide();
                         alert('没有更多卡片啦');
                     }
+                },
+                complete: function () {
+                    isLoading = false;
+                    $wfLoading.hide();
                 }
             });
         }
@@ -127,6 +133,8 @@ define(function (require) {
                 render(curCol, imgs[i], cardList[i], minIndex);
             }
 
+            console.log(map);
+
             isLoading = false;
             $wfLoading.hide();
         });
@@ -151,10 +159,15 @@ define(function (require) {
         }
         var a = document.createElement('a');
         a.href = itemData.bingourl;
-        a.className = 'waterfall-card';
         a.appendChild(img);
         a.target = '_blank';
-        a.style.marginBottom = '10px';
+        a.style.marginBottom = defaultOptions.gutterHeight + 'px';
+        a.className = 'waterfall-card animated flipInY';
+        $(a).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend',
+            function () {
+                $(this).removeClass('animated flipInY');
+            }
+        );
 
         var tagList = itemData.tag;
         if (tagList && tagList.length !== 0) {
@@ -171,8 +184,107 @@ define(function (require) {
         }
         col.appendChild(a);
 
+        updateMap(a);
         colHeight[minIndex] += a.offsetHeight + defaultOptions.gutterHeight;
         wfHeight = utils.getMax(colHeight).maxHeight;
+    }
+
+    function scroll() {
+        var screenHeight = $(window).height();
+        var preScrollTop = 0;
+        var curScrollTop = 0;
+        return function () {
+            curScrollTop = $(window).scrollTop();
+            if (curScrollTop > preScrollTop) {
+                for (var key in map.up) {
+                    if (map.up.hasOwnProperty(key)) {
+                        if (key > screenHeight + curScrollTop - 50
+                            && key < screenHeight + curScrollTop)
+                        {
+                            if (!isAnimating) animatejs(map.up[key]);
+                        }
+                    }
+                }
+            }
+            else if (curScrollTop < preScrollTop) {
+                for (var key in map.down) {
+                    if (map.down.hasOwnProperty(key)) {
+                        if (key > curScrollTop - 50
+                            && key < curScrollTop)
+                        {
+                            if (!isAnimating) animatejs(map.down[key]);
+                        }
+                    }
+                }
+            }
+            preScrollTop = curScrollTop;
+        };
+    }
+
+    function updateMap(card) {
+        var offsetUp = wfOffset + utils.getMin(colHeight).minHeight;
+        var offsetDown = offsetUp + card.offsetHeight;
+        if (!map.up[offsetUp]) {
+            map.up[offsetUp] = [card];
+        }
+        else {
+            map.up[offsetUp].push(card);
+        }
+        if (!map.down[offsetDown]) {
+            map.down[offsetDown] = [card];
+        }
+        else {
+            map.down[offsetDown].push(card);
+        }
+    }
+
+    /**
+     * 使卡片动起来
+     *
+     * @param {HTMLElement} card 卡片DOM元素
+     */
+    function animate(cardList) {
+        cardList.forEach(function (value) {
+            $(value).addClass('animated flipInY')
+            .one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend',
+                function () {
+                    $(this).removeClass('animated flipInY');
+                }
+            );
+        });
+
+    }
+
+    var duration = 1000;
+    var startTime;
+    var isAnimating = false;
+    function animatejs(cardList) {
+        isAnimating = true;
+        startTime = new Date();
+        cardList.forEach(function (card) {
+            card.style.webkitTransform = 'rotate3d(0, 1, 0, 90deg)';
+        });
+        requestAnimationFrame(timeHandler.bind(null, cardList));
+    }
+
+    function timeHandler() {
+        var timePast = new Date() - startTime;
+        if (timePast >= duration) {
+            tick(1);
+            isAnimating = false;
+        }
+        else {
+            var cardList = arguments[0];
+            tick(timePast / duration, cardList);
+            requestAnimationFrame(timeHandler.bind(null, cardList));
+        }
+    }
+
+    function tick(percent, cardList) {
+        var angle = 90 * (1 - percent);
+        cardList.forEach(function (card) {
+            card.style.webkitTransform = 'rotate3d(0, 1, 0, ' + angle + 'deg)';
+        });
     }
 
     /**
@@ -193,9 +305,8 @@ define(function (require) {
         // 在没有设置waterfall-container宽度的时候
         // 滚动条会占据宽度的一部分，导致宽度计算不准确
         // 所以减去滚动条的宽度15px
-        wfWidth = $wfContainer.width() - 15;
-        console.log(wfWidth);
-        console.log($wfContainer[0].clientWidth);
+        // wfWidth = $wfContainer.width() - 15;
+        wfWidth = $wfContainer.width();
         wfHeight = 0;
         colWidth = (wfWidth - (defaultOptions.colNum + 1) * defaultOptions.gutterWidth) / defaultOptions.colNum;
         $wfCol.css({
@@ -221,6 +332,17 @@ define(function (require) {
         // 处理window scroll事件
         var throttled = utils.throttle(defaultOptions.callbackList, defaultOptions.interval);
         $(window).on('scroll', throttled);
+        var scrollFn = scroll();
+        $(window).on('scroll', scrollFn);
+        // setInterval(scrollFn, 20);
+        // window.onscroll = scrollFn;
+        // document.documentElement.removeEventListener('touchmove', scrollFn);
+        document.documentElement.addEventListener('touchmove', scrollFn);
+        // document.documentElement.addEventListener('touchmove', loadMore);
+
+        // var scrollFn = function () {
+        //     $('.log').html($(window).scrollTop());
+        // };
 
         // 加载首屏瀑布流内容
         loadMore();
