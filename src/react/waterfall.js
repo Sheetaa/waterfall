@@ -1,19 +1,48 @@
+/**
+ * @file 瀑布流组件React版
+ * @author Yao Chang(yaochang@baidu.com)
+ * @date 2015-7-27
+ */
+
 var Waterfall = React.createClass({
 
-    load: function(ajaxConf) {
+    caniload: function() {
 
-        var self = this
+        var scrollTop = $(window).scrollTop();
+        var minColHeight = utils.getMin(this.state.colHeight).minHeight;
+        // 比较最高列和最低列之差与200的大小，取最小值
+        // 当滚动条滚动位置与最小列高度之差大于refer值，就可以启动加载更多
+        var refer = Math.min(this.state.wfHeight - minColHeight, 200);
+        if (this.state.screenHeight + scrollTop - (this.state.wfOffsetTop + minColHeight) >= refer) {
+            return true;
+        }
+        return false;
+    },
+
+    load: function() {
+
+        var self = this;
+        self.setState({
+            isLoading: true
+        });
 
         $.get(
-            ajaxConf.url,
+            this.props.url,
             {
-                page: ajaxConf.page,
-                limit: ajaxConf.limit
+                page: this.state.page,
+                limit: this.props.limit
             },
             function (data) {
                 data = JSON.parse(data);
                 if (data.errno === 0) {
                     self.dispatchCards(data.dataset);
+                }
+                else if (data.errno === 1001) {
+                    self.setState({
+                        isLoading: false,
+                        isOver: true
+                    });
+                    alert('已经加载完啦，没有更多图片啦！');
                 }
             }
         );
@@ -27,8 +56,6 @@ var Waterfall = React.createClass({
             img.src = dataList[i].imgSrc;
             img.alt = dataList[i].tag[0];
             img.className = 'waterfall-img';
-            img.style.width = '100%';
-            img.style.height = 'auto';
             imgs.push(img);
         }
 
@@ -43,13 +70,15 @@ var Waterfall = React.createClass({
             self.setState({
                 page: status.page + 1,
                 columns: status.columns,
-                colHeight: status.colHeight
+                colHeight: status.colHeight,
+                isLoading: false,
+                wfHeight: utils.getMax(self.state.colHeight).maxHeight
             });
         });
     },
 
     calColumns: function (dataList, imgs, status) {
-        var self = this;
+
         for (var i = 0, len = dataList.length; i < len; i++) {
             var minIndex = utils.getMin(status.colHeight).minIndex;
             if (!status.columns[minIndex]) {
@@ -59,25 +88,12 @@ var Waterfall = React.createClass({
                 status.columns[minIndex].push(dataList[i]);
             }
 
-            status.colHeight[minIndex] += imgs[i].height + parseInt(self.props.gutterHeight, 10);
+            status.colHeight[minIndex] += imgs[i].height / imgs[i].width * this.state.colWidth + parseInt(this.props.gutterHeight, 10);
         }
-        // imgs.forEach(function (img) {
-        //     var minIndex = utils.getMin(status.colHeight).minIndex;
-        //     if (!status.columns[minIndex]) {
-        //         status.columns[minIndex] = [img];
-        //     }
-        //     else {
-        //         status.columns[minIndex].push(img);
-        //     }
-        //
-        //     status.colHeight[minIndex] += img.height + parseInt(self.props.gutterHeight, 10);
-        // });
         return status;
     },
 
     renderColumns: function () {
-
-        console.log(this.state);
 
         if (this.state.columns.length === 0) {
             return null;
@@ -89,29 +105,48 @@ var Waterfall = React.createClass({
 
     },
 
-    renderColumn: function (column) {
+    renderColumn: function (column, index) {
+        var self = this;
         var arr = column.map(function (card) {
             return (
-                <a href={card.bingourl} className="waterfall-card" target="_blank">
+                <a href={card.bingourl} className="waterfall-card" target="_blank" style={{marginBottom: self.props.gutterHeight + 'px'}}>
                     <img className="waterfall-img" src={card.imgSrc} alt={card.tag[0]} />
                 </a>
             );
         });
 
+        var paddingLeft = index === 0 ? this.props.gutterWidth : 0;
+        var paddingRight = this.props.gutterWidth;
+
         return (
-            <div className="waterfall-col">
+            <div className="waterfall-col" style={{width: this.state.colWidth + 'px', paddingLeft: paddingLeft + 'px', paddingRight: paddingRight + 'px'}}>
                 {arr}
             </div>
         );
     },
 
+    renderLoading: function () {
+        if (this.state.isLoading) {
+            return (
+                <div className="waterfall-loading clearfix">
+                    <i></i>&nbsp;正在加载，请稍候
+                </div>
+            );
+        }
+        return null;
+    },
+
     shouldComponentUpdate: function (nextProps, nextState) {
-        return nextState.page !== this.state.page;
+        // if (nextState.page !== this.state.page) {
+        //     return false;
+        // }
+        return true;
     },
 
     getInitialState: function () {
         var self = this;
         return {
+            // 请求页码
             page: 1,
             // 二维数组，用于记录哪一列该放哪些图片
             columns: [],
@@ -122,35 +157,57 @@ var Waterfall = React.createClass({
                     arr[i] = 0;
                 }
                 return arr;
+            })(),
+            // 列宽
+            colWidth: (function () {
+                var wfWidth = document.getElementsByClassName('content')[0].offsetWidth;
+                var gutterWidth = parseInt(self.props.gutterWidth, 10)
+                var colWidth = (wfWidth - (self.props.colNum + 1) * gutterWidth) / self.props.colNum;
+                return colWidth;
+            })(),
+            // 是否正在加载
+            isLoading: false,
+            // 所有图片是否已经全部加载完毕
+            isOver: false,
+            // 瀑布流在页面中的位置，y方向
+            wfOffsetTop: (function () {
+                return $('.content').offset().top;
+            })(),
+            wfHeight: 0,
+            // 屏幕高度
+            screenHeight: (function () {
+                return $(window).height();
             })()
         };
     },
 
     componentDidMount: function () {
-        this.load({
-            url: this.props.url,
-            page: this.state.page,
-            limit: this.props.limit
-        });
+
+        var self = this;
+
+        setInterval(function () {
+            if (self.caniload() && !self.state.isLoading && !self.state.isOver) {
+                self.load();
+            }
+        }, 100);
     },
 
     render: function () {
         return (
             <div className="waterfall-container clearfix">
                 {this.renderColumns()}
-                <div className="waterfall-loading clearfix">
-                    <i></i>&nbsp;正在加载，请稍候
-                </div>
+                {this.renderLoading()}
             </div>
         );
     }
 });
 
 React.render(
-    <Waterfall colNum="3"
+    <Waterfall colNum={3}
                 url="/bdbox/hot"
-                limit="30"
-                gutterHeight="10"
+                limit={20}
+                gutterWidth={1}
+                gutterHeight={1}
     />,
     document.getElementsByClassName('content')[0]
 );

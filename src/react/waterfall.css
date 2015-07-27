@@ -46,7 +46,6 @@ body {
     font-style: normal;
 }
 .waterfall-loading {
-    display: none;
     padding: 35px 0;
     text-align: center;
     color: #999;

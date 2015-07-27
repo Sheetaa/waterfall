@@ -62,9 +62,31 @@ var utils = (function () {
         };
     }
 
+    /**
+     * 计算数组的最大值和相应索引
+     *
+     * @param {Array.<number>} arr 待计算数组
+     * @return {Object} 返回最大值和索引
+     */
+    function getMax(arr) {
+        var maxIndex = 0;
+        var maxHeight = Number.NEGATIVE_INFINITY;
+        for (var i = 0, len = arr.length; i < len; i++) {
+            if (arr[i] > maxHeight) {
+                maxIndex = i;
+                maxHeight = arr[i];
+            }
+        }
+        return {
+            maxIndex: maxIndex,
+            maxHeight: maxHeight
+        };
+    }
+
     return {
         imagesLoaded: imagesLoaded,
         getArray: getArray,
-        getMin: getMin
+        getMin: getMin,
+        getMax: getMax
     };
 })();
