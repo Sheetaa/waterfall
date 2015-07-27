@@ -6,7 +6,12 @@
 
 var Waterfall = React.createClass({displayName: "Waterfall",
 
-    caniload: function() {
+    /**
+     * 计算滚动位置是否到达瀑布流容器的底部
+     *
+     * @return {boolean} true/false 返回是否可以加载
+     */
+    caniload: function () {
 
         var scrollTop = $(window).scrollTop();
         var minColHeight = utils.getMin(this.state.colHeight).minHeight;
@@ -19,7 +24,10 @@ var Waterfall = React.createClass({displayName: "Waterfall",
         return false;
     },
 
-    load: function() {
+    /**
+     * 加载更多卡片
+     */
+    load: function () {
 
         var self = this;
         self.setState({
@@ -48,7 +56,14 @@ var Waterfall = React.createClass({displayName: "Waterfall",
         );
     },
 
-    dispatchCards: function(dataList) {
+    /**
+     * 加载一批卡片，一般来说一张卡片中包含一张大图
+     * 这里主要是预加载卡片中的图片
+     * 所有图片预加载完成以后再渲染所有卡片
+     *
+     * @param {Array.<Object>} dataList 卡片信息数组
+     */
+    dispatchCards: function (dataList) {
 
         var imgs = [];
         for (var i = 0; i < dataList.length; i++) {
@@ -64,35 +79,47 @@ var Waterfall = React.createClass({displayName: "Waterfall",
         utils.imagesLoaded(imgs, function (imgs) {
 
             // 计算瀑布流每一列应该放哪些卡片，并且更新各列高度
-            var status = self.calColumns(dataList, imgs, self.state);
+            self.calColumns(dataList, imgs);
 
             // 更新状态 触发渲染
             self.setState({
-                page: status.page + 1,
-                columns: status.columns,
-                colHeight: status.colHeight,
+                page: self.state.page + 1,
                 isLoading: false,
                 wfHeight: utils.getMax(self.state.colHeight).maxHeight
             });
         });
     },
 
-    calColumns: function (dataList, imgs, status) {
+    /**
+     * 计算每张卡片应该放在哪一列
+     * 维护一个列信息数组和列高度数组
+     *
+     * @param {Array.<Object>} dataList 卡片信息数组
+     * @param {HTMLImageElement} imgs 图片DOM
+     */
+    calColumns: function (dataList, imgs) {
+
+        var state = this.state;
 
         for (var i = 0, len = dataList.length; i < len; i++) {
-            var minIndex = utils.getMin(status.colHeight).minIndex;
-            if (!status.columns[minIndex]) {
-                status.columns[minIndex] = [dataList[i]];
+            var minIndex = utils.getMin(state.colHeight).minIndex;
+            if (!state.columns[minIndex]) {
+                state.columns[minIndex] = [dataList[i]];
             }
             else {
-                status.columns[minIndex].push(dataList[i]);
+                state.columns[minIndex].push(dataList[i]);
             }
 
-            status.colHeight[minIndex] += imgs[i].height / imgs[i].width * this.state.colWidth + parseInt(this.props.gutterHeight, 10);
+            state.colHeight[minIndex] += imgs[i].height / imgs[i].width * state.colWidth
+                                        + parseInt(this.props.gutterHeight, 10);
         }
-        return status;
     },
 
+    /**
+     * 渲染所有列
+     *
+     * @return {jsx} columns 所有列的jsx
+     */
     renderColumns: function () {
 
         if (this.state.columns.length === 0) {
@@ -105,11 +132,21 @@ var Waterfall = React.createClass({displayName: "Waterfall",
 
     },
 
+    /**
+     * 渲染一列
+     *
+     * @param {Array.<Object>} column 列信息数组
+     * @param {number} index 列索引
+     * @return {jsx} column 一列的jsx
+     */
     renderColumn: function (column, index) {
         var self = this;
         var arr = column.map(function (card) {
             return (
-                React.createElement("a", {href: card.bingourl, className: "waterfall-card", target: "_blank", style: {marginBottom: self.props.gutterHeight + 'px'}}, 
+                React.createElement("a", {href: card.bingourl, 
+                    className: "waterfall-card", 
+                    target: "_blank", 
+                    style: {marginBottom: self.props.gutterHeight + 'px'}}, 
                     React.createElement("img", {className: "waterfall-img", src: card.imgSrc, alt: card.tag[0]})
                 )
             );
@@ -119,12 +156,22 @@ var Waterfall = React.createClass({displayName: "Waterfall",
         var paddingRight = this.props.gutterWidth;
 
         return (
-            React.createElement("div", {className: "waterfall-col", style: {width: this.state.colWidth + 'px', paddingLeft: paddingLeft + 'px', paddingRight: paddingRight + 'px'}}, 
+            React.createElement("div", {className: "waterfall-col", 
+                style: {
+                    width: this.state.colWidth + 'px',
+                    paddingLeft: paddingLeft + 'px',
+                    paddingRight: paddingRight + 'px'
+                }}, 
                 arr
             )
         );
     },
 
+    /**
+     * 判断是否渲染『正在加载』元素
+     *
+     * @return {jsx} jsx/null 正在加载元素jsx或者null
+     */
     renderLoading: function () {
         if (this.state.isLoading) {
             return (
@@ -136,13 +183,11 @@ var Waterfall = React.createClass({displayName: "Waterfall",
         return null;
     },
 
-    shouldComponentUpdate: function (nextProps, nextState) {
-        // if (nextState.page !== this.state.page) {
-        //     return false;
-        // }
-        return true;
-    },
-
+    /**
+     * 官方函数，首次渲染前触发，用于设置state初始值
+     *
+     * @return {Object} state 状态
+     */
     getInitialState: function () {
         var self = this;
         return {
@@ -161,7 +206,7 @@ var Waterfall = React.createClass({displayName: "Waterfall",
             // 列宽
             colWidth: (function () {
                 var wfWidth = document.getElementsByClassName('content')[0].offsetWidth;
-                var gutterWidth = parseInt(self.props.gutterWidth, 10)
+                var gutterWidth = parseInt(self.props.gutterWidth, 10);
                 var colWidth = (wfWidth - (self.props.colNum + 1) * gutterWidth) / self.props.colNum;
                 return colWidth;
             })(),
@@ -181,6 +226,12 @@ var Waterfall = React.createClass({displayName: "Waterfall",
         };
     },
 
+    /**
+     * 官方函数，在初始化渲染之后立即执行一次
+     * 使用setInterval设置每隔100ms执行一次判断
+     * 符合条件执行『加载更多』
+     * 不使用绑定滚动事件或者touch事件，适配PC端和移动端，简单
+     */
     componentDidMount: function () {
 
         var self = this;
@@ -192,6 +243,11 @@ var Waterfall = React.createClass({displayName: "Waterfall",
         }, 100);
     },
 
+    /**
+     * 官方函数，将jsx转为实际DOM
+     *
+     * @return {jsx} jsx 瀑布流container的jsx
+     */
     render: function () {
         return (
             React.createElement("div", {className: "waterfall-container clearfix"}, 

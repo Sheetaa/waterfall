@@ -33,14 +33,6 @@ var utils = (function () {
         }, 100);
     }
 
-    function getArray(obj, num) {
-        var arr = [];
-        for (var i = 0; i < num; i++) {
-            arr[i] = obj;
-        }
-        return arr;
-    }
-
     /**
      * 计算数组的最小值和相应索引
      *
@@ -85,7 +77,6 @@ var utils = (function () {
 
     return {
         imagesLoaded: imagesLoaded,
-        getArray: getArray,
         getMin: getMin,
         getMax: getMax
     };
