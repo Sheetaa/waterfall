@@ -154,7 +154,7 @@ define(function (require) {
         a.className = 'waterfall-card';
         a.appendChild(img);
         a.target = '_blank';
-        a.style.marginBottom = '10px';
+        a.style.marginBottom = defaultOptions.gutterHeight + 'px';
 
         var tagList = itemData.tag;
         if (tagList && tagList.length !== 0) {
@@ -193,9 +193,7 @@ define(function (require) {
         // 在没有设置waterfall-container宽度的时候
         // 滚动条会占据宽度的一部分，导致宽度计算不准确
         // 所以减去滚动条的宽度15px
-        wfWidth = $wfContainer.width() - 15;
-        console.log(wfWidth);
-        console.log($wfContainer[0].clientWidth);
+        wfWidth = $wfContainer.width();
         wfHeight = 0;
         colWidth = (wfWidth - (defaultOptions.colNum + 1) * defaultOptions.gutterWidth) / defaultOptions.colNum;
         $wfCol.css({
@@ -219,11 +217,18 @@ define(function (require) {
         }
 
         // 处理window scroll事件
-        var throttled = utils.throttle(defaultOptions.callbackList, defaultOptions.interval);
-        $(window).on('scroll', throttled);
+        // var throttled = utils.throttle(defaultOptions.callbackList, defaultOptions.interval);
+        // $(window).on('scroll', throttled);
+
+        // 使用setInterval判断触发『加载更多』
+        setInterval(function () {
+            defaultOptions.callbackList.forEach(function (callback) {
+                callback();
+            });
+        }, defaultOptions.interval);
 
         // 加载首屏瀑布流内容
-        loadMore();
+        // loadMore();
     }
 
     return {

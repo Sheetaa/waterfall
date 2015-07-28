@@ -1,6 +1,7 @@
 # 瀑布流组件
 
 ## 特点
+- 适用于移动端
 - 符合AMD规范，使用require加载
 
 ## 用法
@@ -28,9 +29,9 @@ colNum: 3,
 gutterWidth: 10,
 // 卡片上下间距
 gutterHeight: 10,
-// 节流阀间隔时间
+// 间隔时间
 interval: 500,
-// 绑定在scroll事件上的回调函数列表
+// 回调函数列表
 callbackList: [loadMore],
 // 异步请求相关参数
 ajaxConf: {
@@ -40,3 +41,6 @@ ajaxConf: {
     limit: 30
 }
 ```
+
+## Update 2015-7-28
+- 改为优先适配移动端，『加载更多』的启动机制由绑定 scroll 事件改为使用 setInterval，因为在 iOS 下向上滑动不能触发 scroll 事件，首先会触发 touch 事件。

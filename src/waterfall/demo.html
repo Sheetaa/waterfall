@@ -16,8 +16,6 @@
         </div>
         <div class="waterfall-col">
         </div>
-        <div class="waterfall-col">
-        </div>
         <div class="waterfall-loading clearfix"><i></i>&nbsp;正在加载，请稍候</div>
     </div>
     <div class="footer"></div>
@@ -25,7 +23,9 @@
     <script>
     require(['waterfall'], function (waterfall) {
         waterfall.init({
-            colNum: 4,
+            colNum: 3,
+            gutterWidth: 1,
+            gutterHeight: 1,
             ajaxConf: {
                 url: '/bdbox/hot',
                 limit: 20
