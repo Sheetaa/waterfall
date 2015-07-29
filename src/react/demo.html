@@ -9,15 +9,11 @@
 </head>
 <body>
     <div class="content"></div>
-    <script src="zepto.js"></script>
-    <script src="utils.js"></script>
-    <script src="../../output/react/react.js"></script>
-    <script src="../../output/react/waterfall.js"></script>
+    <script src="http://requirejs.org/docs/release/2.1.11/minified/require.js"></script>
     <script>
-    // React.render(
-    //     React.createElement(Waterfall),
-    //     document.getElementsByClassName('content')[0]
-    // );
+    require(['index'], function (index) {
+        index.init();
+    });
     </script>
 </body>
 </html>

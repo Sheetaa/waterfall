@@ -1,6 +1,7 @@
 /* Zepto 1.1.2 - zepto event ajax ie detect - zeptojs.com/license */
 
 
+define(function (require, exports, module) {
 
 var Zepto = (function() {
   var undefined, key, $, classList, emptyArray = [], slice = emptyArray.slice, filter = emptyArray.filter,
@@ -1594,3 +1595,6 @@ window.$ === undefined && (window.$ = Zepto)
   $.__detect = detect
 
 })(Zepto);
+
+module.exports = Zepto;
+});

@@ -1,11 +1,36 @@
 exports.port = 8848;
 exports.directoryIndexes = true;
 exports.documentRoot = __dirname;
+
+var transform = require('react-tools').transform;
+var fs = require('fs');
+var mime = require('mime');
+var path = require('path');
+
 exports.getLocations = function () {
     return [
         {
             location: /\/$/,
             handler: home( 'index.html' )
+        },
+        {
+            location: /\.jsx?($|\?)/,
+            handler: [
+                function (context) {
+                    var pathname = context.request.pathname;
+                    if (/\.jsx\.js$($|\?)/.test(pathname)) {
+                        pathname = pathname.replace(/\.js$/, '');
+                    }
+                    var file = path.join(context.conf.documentRoot, pathname);
+                    if (fs.existsSync(file)) {
+                        context.header['content-type'] = mime.lookup('js');
+                        context.content = fs.readFileSync(file, 'utf8');
+                    }
+                },
+                function (context) {
+                    context.content = transform(context.content);
+                }
+            ]
         },
         {
             location: function (req) {
@@ -25,22 +50,6 @@ exports.getLocations = function () {
             ]
         },
         {
-            location: /^\/redirect-local/,
-            handler: redirect('redirect-target', false)
-        },
-        {
-            location: /^\/redirect-remote/,
-            handler: redirect('http://www.baidu.com', false)
-        },
-        {
-            location: /^\/redirect-target/,
-            handler: content('redirectd!')
-        },
-        {
-            location: '/empty',
-            handler: empty()
-        },
-        {
             location: /\.css($|\?)/,
             handler: [
                 autocss()
@@ -51,13 +60,6 @@ exports.getLocations = function () {
             handler: [
                 file(),
                 less()
-            ]
-        },
-        {
-            location: /\.styl($|\?)/,
-            handler: [
-                file(),
-                stylus()
             ]
         },
         {
