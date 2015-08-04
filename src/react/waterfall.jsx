@@ -117,7 +117,7 @@ define(function (require) {
                 }
 
                 state.colHeight[minIndex] += imgs[i].height / imgs[i].width * state.colWidth
-                                            + parseInt(this.props.gutterHeight, 10);
+                    + parseInt(this.props.gutterHeight, 10);
             }
         },
 
@@ -211,7 +211,7 @@ define(function (require) {
                 })(),
                 // 列宽
                 colWidth: (function () {
-                    var wfWidth = document.getElementsByClassName('content')[0].offsetWidth;
+                    var wfWidth = $('.content')[0].offsetWidth;
                     var gutterWidth = parseInt(self.props.gutterWidth, 10);
                     var colWidth = (wfWidth - (self.props.colNum + 1) * gutterWidth) / self.props.colNum;
                     return colWidth;

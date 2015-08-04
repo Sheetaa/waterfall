@@ -14,11 +14,16 @@ exports.getLocations = function () {
             handler: home( 'index.html' )
         },
         {
+            // 处理后缀是.js和.jsx两种情况
             location: /\.jsx?($|\?)/,
             handler: [
+                /**
+                 * 读取文件内容
+                 */
                 function (context) {
                     var pathname = context.request.pathname;
                     if (/\.jsx\.js$($|\?)/.test(pathname)) {
+                        // 如果后缀是.jsx.js，去掉.js
                         pathname = pathname.replace(/\.js$/, '');
                     }
                     var file = path.join(context.conf.documentRoot, pathname);
@@ -27,6 +32,10 @@ exports.getLocations = function () {
                         context.content = fs.readFileSync(file, 'utf8');
                     }
                 },
+                /**
+                 * 不论是.js还是.jsx，都进行jsx的transform转换
+                 * 因为.js里也可能有jsx的语法
+                 */
                 function (context) {
                     context.content = transform(context.content);
                 }
