@@ -100,7 +100,7 @@ define(function (require) {
                 if (target[key] && isArray(target[key])) {
                     target[key] = target[key].concat(source[key]);
                 }
-                else if (target[key] && isObject(target[key])) {
+                else if (target[key] && isObject(target[key]) && isObject(source[key])) {
                     target[key] = extend(target[key], source[key]);
                 }
                 else {
@@ -138,7 +138,7 @@ define(function (require) {
      * @return {Object} 返回最小值和索引
      */
     function getMin(arr) {
-        var minIndex = 0;
+        var minIndex = -1;
         var minHeight = Number.POSITIVE_INFINITY;
         for (var i = 0, len = arr.length; i < len; i++) {
             if (arr[i] < minHeight) {
@@ -159,7 +159,7 @@ define(function (require) {
      * @return {Object} 返回最大值和索引
      */
     function getMax(arr) {
-        var maxIndex = 0;
+        var maxIndex = -1;
         var maxHeight = Number.NEGATIVE_INFINITY;
         for (var i = 0, len = arr.length; i < len; i++) {
             if (arr[i] > maxHeight) {
@@ -177,6 +177,8 @@ define(function (require) {
         imagesLoaded: imagesLoaded,
         throttle: throttle,
         extend: extend,
+        isArray: isArray,
+        isObject: isObject,
         getMin: getMin,
         getMax: getMax
     };

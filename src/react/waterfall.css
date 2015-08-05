@@ -22,7 +22,7 @@ body {
     margin: 0 0 6px;
     display: block;
     -webkit-animation-duration: 1s;
-    animation-duration: 1s;
+            animation-duration: 1s;
 }
 .waterfall-img {
     width: 100%;

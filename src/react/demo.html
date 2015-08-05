@@ -9,8 +9,14 @@
 </head>
 <body>
     <div class="content"></div>
-    <script src="http://requirejs.org/docs/release/2.1.11/minified/require.js"></script>
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/2-0-6/esl.js"></script>
     <script>
+    require.config({
+        paths: {
+            zepto: '../common/zepto',
+            utils: '../common/utils'
+        }
+    });
     require(['index'], function (index) {
         index.init();
     });
