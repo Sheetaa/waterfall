@@ -15,8 +15,10 @@
     "dependencies": {}
   },
   "dependencies": {
+    "mime": "^1.3.4",
     "react": "^0.13.3",
-    "react-tools": "^0.13.3"
+    "react-tools": "^0.13.3",
+    "zepto": "0.0.4"
   },
   "author": "",
   "repository": "empty",

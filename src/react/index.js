@@ -1,3 +1,9 @@
+/**
+ * @file index
+ * @author Yao Chang(yaochang@baidu.com)
+ *
+ */
+
 define(function (require) {
 
     var React = require('react');
@@ -7,7 +13,10 @@ define(function (require) {
         init: function () {
             React.render(
                 <Waterfall
+                    prefix="waterfall"
+                    baseRefer={200}
                     colNum={3}
+                    interval={100}
                     url="/bdbox/hot"
                     limit={20}
                     gutterWidth={1}

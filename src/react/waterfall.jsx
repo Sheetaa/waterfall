@@ -1,7 +1,7 @@
 /**
  * @file 瀑布流组件React版
  * @author Yao Chang(yaochang@baidu.com)
- * @date 2015-7-27
+ *
  */
 
 define(function (require) {
@@ -17,14 +17,17 @@ define(function (require) {
          *
          * @return {boolean} true/false 返回是否可以加载
          */
-        caniload: function () {
+        canILoad: function () {
+
+            var state = this.state;
+            var props = this.props;
 
             var scrollTop = $(window).scrollTop();
-            var minColHeight = utils.getMin(this.state.colHeight).minHeight;
+            var minColHeight = utils.getMin(state.colHeight).minHeight;
             // 比较最高列和最低列之差与200的大小，取最小值
             // 当滚动条滚动位置与最小列高度之差大于refer值，就可以启动加载更多
-            var refer = Math.min(this.state.wfHeight - minColHeight, 200);
-            if (this.state.screenHeight + scrollTop - (this.state.wfOffsetTop + minColHeight) >= refer) {
+            var refer = Math.min(state.wfHeight - minColHeight, props.baseRefer);
+            if (state.screenHeight + scrollTop - (state.wfOffsetTop + minColHeight) >= refer) {
                 return true;
             }
             return false;
@@ -36,15 +39,17 @@ define(function (require) {
         load: function () {
 
             var self = this;
+            var state = this.state;
+            var props = this.props;
             self.setState({
                 isLoading: true
             });
 
             $.get(
-                this.props.url,
+                props.url,
                 {
-                    page: this.state.page,
-                    limit: this.props.limit
+                    page: state.page,
+                    limit: props.limit
                 },
                 function (data) {
                     data = JSON.parse(data);
@@ -71,16 +76,19 @@ define(function (require) {
          */
         dispatchCards: function (dataList) {
 
+            var self = this;
+            var state = this.state;
+            var props = this.props;
+
+
             var imgs = [];
             for (var i = 0; i < dataList.length; i++) {
                 var img = new Image();
                 img.src = dataList[i].imgSrc;
                 img.alt = dataList[i].tag[0];
-                img.className = 'waterfall-img';
+                img.className = props.prefix + '-img';
                 imgs.push(img);
             }
-
-            var self = this;
 
             utils.imagesLoaded(imgs, function (imgs) {
 
@@ -89,9 +97,9 @@ define(function (require) {
 
                 // 更新状态 触发渲染
                 self.setState({
-                    page: self.state.page + 1,
+                    page: state.page + 1,
                     isLoading: false,
-                    wfHeight: utils.getMax(self.state.colHeight).maxHeight
+                    wfHeight: utils.getMax(state.colHeight).maxHeight
                 });
             });
         },
@@ -106,6 +114,7 @@ define(function (require) {
         calColumns: function (dataList, imgs) {
 
             var state = this.state;
+            var props = this.props;
 
             for (var i = 0, len = dataList.length; i < len; i++) {
                 var minIndex = utils.getMin(state.colHeight).minIndex;
@@ -117,7 +126,7 @@ define(function (require) {
                 }
 
                 state.colHeight[minIndex] += imgs[i].height / imgs[i].width * state.colWidth
-                    + parseInt(this.props.gutterHeight, 10);
+                    + parseInt(props.gutterHeight, 10);
             }
         },
 
@@ -127,10 +136,6 @@ define(function (require) {
          * @return {jsx} columns 所有列的jsx
          */
         renderColumns: function () {
-
-            if (this.state.columns.length === 0) {
-                return null;
-            }
 
             var columns = this.state.columns.map(this.renderColumn);
 
@@ -143,28 +148,34 @@ define(function (require) {
          *
          * @param {Array.<Object>} column 列信息数组
          * @param {number} index 列索引
+         *
          * @return {jsx} column 一列的jsx
          */
         renderColumn: function (column, index) {
+
             var self = this;
+            var state = this.state;
+            var props = this.props;
+            var prefix = props.prefix;
+
             var arr = column.map(function (card) {
                 return (
                     <a href={card.bingourl}
-                        className="waterfall-card"
-                        target="_blank"
-                        style={{marginBottom: self.props.gutterHeight + 'px'}}>
-                        <img className="waterfall-img" src={card.imgSrc} alt={card.tag[0]} />
+                        className={prefix + '-card'}
+                        target='_blank'
+                        style={{marginBottom: props.gutterHeight + 'px'}}>
+                        <img className={prefix + '-img'} src={card.imgSrc} alt={card.tag[0]} />
                     </a>
                 );
             });
 
-            var paddingLeft = index === 0 ? this.props.gutterWidth : 0;
-            var paddingRight = this.props.gutterWidth;
+            var paddingLeft = index === 0 ? props.gutterWidth : 0;
+            var paddingRight = props.gutterWidth;
 
             return (
-                <div className="waterfall-col"
+                <div className={prefix + '-col'}
                     style={{
-                        width: this.state.colWidth + 'px',
+                        width: state.colWidth + 'px',
                         paddingLeft: paddingLeft + 'px',
                         paddingRight: paddingRight + 'px'
                     }}>
@@ -181,7 +192,7 @@ define(function (require) {
         renderLoading: function () {
             if (this.state.isLoading) {
                 return (
-                    <div className="waterfall-loading clearfix">
+                    <div className={this.props.prefix + '-loading clearfix'}>
                         <i></i>&nbsp;正在加载，请稍候
                     </div>
                 );
@@ -195,7 +206,11 @@ define(function (require) {
          * @return {Object} state 状态
          */
         getInitialState: function () {
+
             var self = this;
+            var state = this.state;
+            var props = this.props;
+
             return {
                 // 请求页码
                 page: 1,
@@ -204,7 +219,7 @@ define(function (require) {
                 // 存储每一列的高度
                 colHeight: (function () {
                     var arr = [];
-                    for (var i = 0, len = self.props.colNum; i < len; i++) {
+                    for (var i = 0, len = props.colNum; i < len; i++) {
                         arr[i] = 0;
                     }
                     return arr;
@@ -212,8 +227,8 @@ define(function (require) {
                 // 列宽
                 colWidth: (function () {
                     var wfWidth = $('.content')[0].offsetWidth;
-                    var gutterWidth = parseInt(self.props.gutterWidth, 10);
-                    var colWidth = (wfWidth - (self.props.colNum + 1) * gutterWidth) / self.props.colNum;
+                    var gutterWidth = parseInt(props.gutterWidth, 10);
+                    var colWidth = (wfWidth - (props.colNum + 1) * gutterWidth) / props.colNum;
                     return colWidth;
                 })(),
                 // 是否正在加载
@@ -243,20 +258,20 @@ define(function (require) {
             var self = this;
 
             setInterval(function () {
-                if (self.caniload() && !self.state.isLoading && !self.state.isOver) {
+                if (self.canILoad() && !self.state.isLoading && !self.state.isOver) {
                     self.load();
                 }
-            }, 100);
+            }, self.props.interval);
         },
 
         /**
-         * 官方函数，将jsx转为实际DOM
+         * 官方函数，渲染jsx
          *
          * @return {jsx} jsx 瀑布流container的jsx
          */
         render: function () {
             return (
-                <div className="waterfall-container clearfix">
+                <div className={this.props.prefix + '-container clearfix'}>
                     {this.renderColumns()}
                     {this.renderLoading()}
                 </div>

@@ -1,13 +1,13 @@
 /**
  * @file 瀑布流依赖的工具函数
  * @author Yao Chang(yaochang@baidu.com)
- * @date 2015-7-21
+ *
  */
 
 define(function (require) {
 
     /**
-     * 判断给定所有图片是否都已经加载完成
+     * 判断给定所有图片是否都已经加载完成，并执行回调
      *
      * @param {Array.<HTMLImageElement>} imgs 图片DOM数组
      * @param {Function} callback 图片加载完成以后执行的回调函数
@@ -15,9 +15,7 @@ define(function (require) {
     function imagesLoaded(imgs, callback) {
         var len = imgs.length;
         var tags = [];
-        for (var i = 0; i < len; i++) {
-            tags[i] = false;
-        }
+        tags.length = len;
         imgs.forEach(function (img, index) {
             img.onload = function () {
                 tags[index] = true;
@@ -27,16 +25,13 @@ define(function (require) {
             };
         });
         var interval = setInterval(function () {
-            var tag = true;
-            tags.forEach(function (value, index) {
-                if (value === false) {
-                    tag = false;
+            for (var i = 0; i < len; i++) {
+                if (!tags[i]) {
+                    return;
                 }
-            });
-            if (tag === true) {
-                clearInterval(interval);
-                callback(imgs);
             }
+            clearInterval(interval);
+            callback(imgs);
         }, 100);
     }
 
@@ -46,6 +41,7 @@ define(function (require) {
      *
      * @param {Array.<Function>} callbackList 要控制的回调函数列表
      * @param {number} interval 函数执行时间间隔
+     *
      * @return {Function} 闭包
      */
     function throttle(callbackList, interval) {
@@ -92,6 +88,7 @@ define(function (require) {
      *
      * @param {Object} target 目标对象
      * @param {Object} source 源对象
+     *
      * @return {Object} target 返回目标对象
      */
     function extend(target, source) {
@@ -115,6 +112,7 @@ define(function (require) {
      * 判断是不是数组
      *
      * @param {Object} arr 对象
+     *
      * @return {boolean} 返回真假值
      */
     function isArray(arr) {
@@ -125,6 +123,7 @@ define(function (require) {
      * 判断是不是对象
      *
      * @param {Object} obj 对象
+     *
      * @return {boolean} 返回真假值
      */
     function isObject(obj) {
@@ -135,6 +134,7 @@ define(function (require) {
      * 计算数组的最小值和相应索引
      *
      * @param {Array.<number>} arr 待计算数组
+     *
      * @return {Object} 返回最小值和索引
      */
     function getMin(arr) {
@@ -156,6 +156,7 @@ define(function (require) {
      * 计算数组的最大值和相应索引
      *
      * @param {Array.<number>} arr 待计算数组
+     *
      * @return {Object} 返回最大值和索引
      */
     function getMax(arr) {
