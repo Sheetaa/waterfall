@@ -12,6 +12,17 @@ define(function (require) {
 
     var Waterfall = React.createClass({
 
+        propTypes: {
+            prefix: React.PropTypes.string,
+            baseRefer: React.PropTypes.number,
+            colNum: React.PropTypes.number,
+            interval: React.PropTypes.number,
+            url: React.PropTypes.string,
+            limit: React.PropTypes.number,
+            gutterWidth: React.PropTypes.number,
+            gutterHeight: React.PropTypes.number,
+        },
+
         /**
          * 计算滚动位置是否到达瀑布流容器的底部
          *
